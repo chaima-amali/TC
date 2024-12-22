@@ -1,16 +1,21 @@
+import React from 'react';
+import Loginpage from './Pages/Login_page';
+import Admin from './Pages/Admin';
+import Employee from './Pages/Employee';
+import HR from './Pages/HR';
 
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
-
-
-import React, { useState } from 'react';
-import { useNvigate } from 'react-router-dom';
-import Admin from '../Comp/Admin/Admin';
-
+const App = () => {
   return (
-    <div>
-      <Admin/>
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Loginpage />} />
+        <Route path="/hr" element={<HR />} />
+        <Route path="/admin" element={<Admin />} />
+        <Route path="/employee" element={<Employee />} />
+      </Routes>
+    </Router>
   );
-
-export default LoginPage;
-
+};
+export default App;

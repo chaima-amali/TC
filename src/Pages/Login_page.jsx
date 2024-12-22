@@ -1,9 +1,12 @@
-import { useState } from 'react';
+
+import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const LoginPage = () => {
-  // Initialiser l'état du formulaire
   const [formData, setFormData] = useState({
-    usrname: '',
+    username: '',
     password: '',
   });
 
@@ -12,115 +15,141 @@ const LoginPage = () => {
 
   const validateForm = () => {
     const newErrors = {};
-
-    // Validate the username (usrname)
-    if (!formData.usrname) {
-      newErrors.usrname = 'User name is required!';
+    if (!formData.username) {
+      newErrors.username = 'Username / Email is required!';
     }
-
-    // Validate the password
     if (!formData.password) {
       newErrors.password = 'Password is required!';
-    } else if (formData.password.length <= 8) {
+    }
+    else if (formData.password.length <= 8) {
       newErrors.password = 'Password must be more than 8 characters!';
     }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setSubmitted(false);
 
-    // Validation du formulaire avant soumission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    setSubmitted(false);
     if (validateForm()) {
-      setSubmitted(true);
-      console.log('Form submitted successfully:', formData);
+      try {
+        console.log('ABCDEF');
+        try{
+          console.log(formData.username)
+          console.log(formData.password)
+          const response = await axios.post('http://127.0.0.1:8008/auth/login', {
+          username: formData.username,
+          password: formData.password
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',  // Ensure it's set if needed
+          }
+        });}
+        catch (error) {
+          console.log('ABCDEFg');
+          setErrors({ ...errors, submit: 'Invalid credentials or server error' });
+          console.error('Login error:', error);
+          
+        }
+        console.log('ABCDEFgh');
+       console.log(response);
+        if (response.data) {
+          setSubmitted(true);
+          localStorage.setItem('user', JSON.stringify(response.data));
+          if (response.data.role === 'admin') {
+            navigate('/Admin');
+          } else if (response.data.role === 'hr') {
+            navigate('/HR');
+          } else {
+            navigate('/Employee');
+          }
+        }
+      } catch (error) {
+        console.log('ABCDEF');
+        setErrors({ ...errors, submit: 'Invalid credentials or server error' });
+        console.error('Login error:', error);
+        console.log('ABCDEF');
+      }
     }
   };
 
-  const LoginPage = ({ login }) => {
-    const [formData, setFormData] = useState({
-      usrname: '',
-      password: '',
-    });
-  
-    const [errors, setErrors] = useState({});
-    const [submitted, setSubmitted] = useState(false);
-  
-    const validateForm = () => {
-      const newErrors = {};
-  
-      if (!formData.usrname) {
-        newErrors.usrname = 'User name is required!';
-      }
-  
-      if (!formData.password) {
-        newErrors.password = 'Password is required!';
-      } else if (formData.password.length <= 8) {
-        newErrors.password = 'Password must be more than 8 characters!';
-      }
-  
-      setErrors(newErrors);
-      return Object.keys(newErrors).length === 0;
-    };
-  
-    const handleSubmit = (e) => {
-      e.preventDefault();
-      setSubmitted(false);
-  
-      if (validateForm()) {
-        setSubmitted(true);
-        login(formData.usrname, formData.password); // Call the login function passed as a prop
-      }
-    };
-  
-    return (
-      <div className="flex md:flex-row flex-col items-center justify-center h-screen w-full">
-        <div className="w-1/3">
-          <img src="../assets/bg_pic.png" alt="Background" />
+
+
+  return (
+    <div className="flex min-h-screen w-full items-center justify-center bg-white p-4">
+      {/* Left side with illustration */}
+      <div className="flex w-full max-w-4xl items-center justify-between gap-8">
+        <div className="hidden md:block md:w-1/3">
+          <img
+            src="src\assets\bg_pic.png"
+            alt="Login illustration"
+            className="w-full"
+          />
         </div>
-  
-        <div className="md:w-1/4 w-1/2">
-          <h2 className="text-5xl p-2">Log In</h2>
-          {submitted && <p className="success-message">Login Successful!</p>}
-          <form onSubmit={handleSubmit}>
-            <div className="flex flex-col p-2">
-              <label>User Name</label>
+
+        {/* Right side with form */}
+        <div className="w-full md:w-1/2 max-w-md">
+          {/* Logo - visible only on mobile */}
+          <div className="mb-8 md:hidden">
+            <div className="h-12 w-12 rounded-full bg-blue-600"></div>
+          </div>
+
+          <div className="mb-8">
+            <h1 className="mb-2 text-3xl font-semibold text-gray-900">Log In</h1>
+            <p className="text-gray-600">Welcome Back.</p>
+            <p className="text-gray-600">Please Enter Your Details.</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label className="block text-sm text-gray-600">Email or Username</label>
               <input
                 type="text"
-                value={formData.usrname}
-                className="border-black border-2 rounded-lg"
-                onChange={(e) =>
-                  setFormData({ ...formData, usrname: e.target.value })
-                }
+                value={formData.username}
+                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                className="mt-1 w-full rounded-md border border-gray-300 p-3 text-sm focus:border-blue-500 focus:outline-none"
+                placeholder="Exemple@Exemple.com / usrname"
               />
-              {errors.usrname && (
-                <p style={{ color: 'red', fontSize: '14px' }}>{errors.usrname}</p>
+              {errors.username && (
+                <p className="mt-1 text-sm text-red-500">{errors.username}</p>
               )}
             </div>
-            <div className="flex flex-col p-2">
-              <label>Password:</label>
-              <input
-                type="password"
-                className="border-black border-2 rounded-lg"
-                value={formData.password}
-                onChange={(e) =>
-                  setFormData({ ...formData, password: e.target.value })
-                }
-              />
-              {errors.password && (
-                <p style={{ color: 'red', fontSize: '14px' }}>{errors.password}</p>
-              )}
+
+            <div>
+              <label className="block text-sm text-gray-600">Password</label>
+              <div className="relative">
+                <input
+                  type="password"
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  className="mt-1 w-full rounded-md border border-gray-300 p-3 text-sm focus:border-blue-500 focus:outline-none"
+                />
+                {errors.password && (
+                  <p className="mt-1 text-sm text-red-500">{errors.password}</p>
+                )}
+              </div>
+              <div className="mt-1 text-right">
+                <a href="#" className="text-xs text-gray-500 hover:text-gray-700">
+                  I forgot my password
+                </a>
+              </div>
             </div>
-            <button type="submit" className="p-2 bg-slate-700 text-white w-full">
+          
+            <button
+              type="submit"
+              className="w-full rounded-md bg-blue-600 py-3 text-white hover:bg-blue-700 focus:outline-none"
+            >
               Login
             </button>
+           
           </form>
         </div>
       </div>
-    );
-  };
+    </div>
+  );
 };
-  export default LoginPage;
+
+export default LoginPage;
